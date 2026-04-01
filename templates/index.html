@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FoodieBot 🍕 — Smart Food Delivery</title>
+  <meta name="description" content="Order Indian & Western food with FoodieBot — fast delivery, real-time tracking" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #09090f;
+      --surface: rgba(255, 255, 255, .05);
+      --surface2: rgba(255, 255, 255, .08);
+      --border: rgba(255, 255, 255, .08);
+      --border2: rgba(255, 255, 255, .14);
+      --text: #f0f0f4;
+      --muted: rgba(240, 240, 244, .5);
+      --accent: #ff6b35;
+      --accent2: #f7931e;
+      --grad: linear-gradient(135deg, #ff6b35, #f7931e);
+      --green: #22c55e;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --yellow: #f59e0b;
+      --shadow: 0 8px 32px rgba(0, 0, 0, .5);
+      --r: 14px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    .hdr {
+      background: rgba(9, 9, 15, .96);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .hdr-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hdr-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--grad);
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 16px rgba(255, 107, 53, .35);
+    }
+
+    .hdr-title {
+      font-size: 20px;
+      font-weight: 800;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hdr-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .hdr-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .live {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--green);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .3;
+      }
+    }
+
+    .cart-btn {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 16px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: .2s;
+    }
+
+    .cart-btn:hover {
+      background: var(--surface2);
+      border-color: var(--border2);
+    }
+
+    .cbadge {
+      position: absolute;
+      top: -7px;
+      right: -7px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      width: 19px;
+      height: 19px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* ── LAYOUT ── */
+    .wrap {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── CHAT ── */
+    .chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .msgs {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+
+    .msgs::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .msgs::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, .1);
+      border-radius: 2px;
+    }
+
+    /* ── MESSAGES ── */
+    .msg {
+      display: flex;
+      gap: 10px;
+      animation: fadeUp .3s ease;
+      max-width: 82%;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .msg.bot {
+      align-self: flex-start;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .avatar.bot-av {
+      background: var(--grad);
+    }
+
+    .avatar.usr-av {
+      background: rgba(255, 255, 255, .1);
+    }
+
+    .bubble {
+      padding: 13px 16px;
+      border-radius: var(--r);
+      line-height: 1.6;
+      font-size: 14px;
+      max-width: 100%;
+    }
+
+    .msg.bot .bubble {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top-left-radius: 4px;
+    }
+
+    .msg.user .bubble {
+      background: var(--grad);
+      color: #fff;
+      border-top-right-radius: 4px;
+    }
+
+    .bubble b,
+    .bubble strong {
+      font-weight: 700;
+    }
+
+    /* ── MENU CARDS ── */
+    .menu-wrap {
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .menu-cat {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin: 14px 0 8px;
+    }
+
+    .menu-cat:first-child {
+      margin-top: 0;
+    }
+
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .item-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 12px;
+      transition: .2s;
+      cursor: default;
+    }
+
+    .item-card:hover {
+      border-color: var(--border2);
+      background: var(--surface2);
+      transform: translateY(-1px);
+    }
+
+    .item-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .item-emoji {
+      font-size: 24px;
+    }
+
+    .item-name {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      flex: 1;
+    }
+
+    .veg-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      border: 1.5px solid;
+    }
+
+    .veg-dot.veg {
+      border-color: var(--green);
+      background: var(--green);
+    }
+
+    .veg-dot.nveg {
+      border-color: var(--red);
+      background: var(--red);
+    }
+
+    .item-bot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .item-price {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    .add-btn {
+      background: var(--grad);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: .15s;
+    }
+
+    .add-btn:hover {
+      opacity: .85;
+      transform: scale(1.04);
+    }
+
+    .add-btn:active {
+      transform: scale(.97);
+    }
+
+    /* ── RECOMMENDATIONS ── */
+    .rec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .rec-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+      text-align: center;
+      transition: .2s;
+    }
+
+    .rec-card:hover {
+      border-color: rgba(255, 107, 53, .4);
+      transform: translateY(-2px);
+    }
+
+    .rec-emoji {
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .rec-name {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+
+    .rec-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 10px;
+    }
+
+    .rec-btns {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    /* ── CART CARD (inline) ── */
+    .cart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .cart-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cart-line:last-of-type {
+      border-bottom: none;
+    }
+
+    .cart-em {
+      font-size: 20px;
+    }
+
+    .cart-info {
+      flex: 1;
+    }
+
+    .cart-nm {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .cart-qty {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .cart-pr {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    .rm-btn {
+      background: rgba(239, 68, 68, .15);
+      border: 1px solid rgba(239, 68, 68, .3);
+      border-radius: 7px;
+      color: var(--red);
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: .15s;
+    }
+
+    .rm-btn:hover {
+      background: rgba(239, 68, 68, .25);
+    }
+
+    .cart-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      margin-top: 4px;
+      border-top: 1px solid var(--border2);
+    }
+
+    .cart-total-label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .cart-total-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* ── PAYMENT METHODS ── */
+    .pay-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pay-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+      cursor: pointer;
+      transition: .2s;
+      text-align: center;
+    }
+
+    .pay-card:hover,
+    .pay-card.selected {
+      border-color: var(--accent);
+      background: rgba(255, 107, 53, .08);
+    }
+
+    .pay-icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .pay-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .pay-desc {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .confirm-order-btn {
+      background: var(--grad);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 12px;
+      width: 100%;
+      transition: .15s;
+      display: none;
+    }
+
+    .confirm-order-btn:hover {
+      opacity: .88;
+    }
+
+    /* ── ORDER TRACKING ── */
+    .track-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 18px;
+      margin-top: 10px;
+    }
+
+    .track-id {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .track-steps {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      margin: 14px 0;
+      position: relative;
+    }
+
+    .track-step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .step-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      margin: 0 auto 6px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      transition: .3s;
+    }
+
+    .step-circle.done {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .step-circle.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(255, 107, 53, .5);
+      animation: glow 1.5s infinite;
+    }
+
+    @keyframes glow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 12px rgba(255, 107, 53, .5);
+      }
+
+      50% {
+        box-shadow: 0 0 22px rgba(255, 107, 53, .8);
+      }
+    }
+
+    .step-label {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .step-label.active-lbl {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .step-line {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      right: -50%;
+      height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+
+    .step-line.done {
+      background: var(--green);
+    }
+
+    .step-circle {
+      z-index: 1;
+      position: relative;
+    }
+
+    .track-items {
+      margin-top: 12px;
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    .track-item-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      color: var(--muted);
+    }
+
+    /* ── CANCELLED CARD ── */
+    .cancel-card {
+      background: rgba(239, 68, 68, .08);
+      border: 1px solid rgba(239, 68, 68, .25);
+      border-radius: var(--r);
+      padding: 16px;
+      margin-top: 10px;
+    }
+
+    .cancel-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--red);
+      margin-bottom: 8px;
+    }
+
+    .cancel-items {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .cancel-refund {
+      font-size: 13px;
+      color: var(--green);
+    }
+
+    /* ── OFFERS ── */
+    .offer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .offer-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+      transition: .2s;
+    }
+
+    .offer-card:hover {
+      border-color: var(--yellow);
+      background: rgba(245, 158, 11, .05);
+    }
+
+    .offer-icon {
+      font-size: 24px;
+      margin-bottom: 6px;
+    }
+
+    .offer-code {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--yellow);
+      letter-spacing: .5px;
+      background: rgba(245, 158, 11, .1);
+      padding: 3px 8px;
+      border-radius: 5px;
+      display: inline-block;
+    }
+
+    .offer-desc {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* ── PAYMENT DISPLAY ── */
+    .pinfo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pinfo-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .pinfo-icon {
+      font-size: 22px;
+    }
+
+    .pinfo-name {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .pinfo-desc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-wrap {
+      padding: 0 20px 14px;
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .qa {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text);
+      font-family: inherit;
+      transition: .15s;
+      white-space: nowrap;
+    }
+
+    .qa:hover {
+      background: var(--surface2);
+      border-color: var(--border2);
+      transform: translateY(-1px);
+    }
+
+    /* ── INPUT ── */
+    .input-area {
+      padding: 0 20px 18px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 18px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: .2s;
+    }
+
+    .chat-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, .15);
+    }
+
+    .chat-input::placeholder {
+      color: var(--muted);
+    }
+
+    .send-btn {
+      background: var(--grad);
+      border: none;
+      border-radius: 12px;
+      width: 47px;
+      height: 47px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: .15s;
+      box-shadow: 0 4px 14px rgba(255, 107, 53, .3);
+    }
+
+    .send-btn:hover {
+      opacity: .85;
+      transform: scale(1.05);
+    }
+
+    /* ── CART PANEL ── */
+    .cart-panel {
+      width: 0;
+      overflow: hidden;
+      transition: width .3s ease;
+      background: rgba(9, 9, 15, .98);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cart-panel.open {
+      width: 320px;
+    }
+
+    .cp-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .cp-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .cp-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      transition: .15s;
+    }
+
+    .cp-close:hover {
+      color: var(--text);
+    }
+
+    .cp-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 18px;
+    }
+
+    .cp-empty {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 40px 0;
+    }
+
+    .cp-item {
+      display: flex;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cp-em {
+      font-size: 22px;
+    }
+
+    .cp-info {
+      flex: 1;
+    }
+
+    .cp-nm {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .cp-qty-pr {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .cp-pr {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    .cp-rm {
+      background: none;
+      border: none;
+      color: var(--red);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px;
+      opacity: .7;
+      transition: .15s;
+    }
+
+    .cp-rm:hover {
+      opacity: 1;
+    }
+
+    .cp-footer {
+      padding: 16px 18px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .cp-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .cp-total-lbl {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .cp-total-val {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .cp-checkout {
+      background: var(--grad);
+      border: none;
+      border-radius: 11px;
+      color: #fff;
+      width: 100%;
+      padding: 13px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: .15s;
+    }
+
+    .cp-checkout:hover {
+      opacity: .88;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1a1a2e;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: transform .3s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      border-color: rgba(34, 197, 94, .4);
+      color: var(--green);
+    }
+
+    .toast.error {
+      border-color: rgba(239, 68, 68, .4);
+      color: var(--red);
+    }
+
+    /* ── TYPING INDICATOR ── */
+    .typing {
+      display: none;
+      align-self: flex-start;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .typing.show {
+      display: flex;
+    }
+
+    .typing-dots {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      border-top-left-radius: 4px;
+      padding: 13px 18px;
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .typing-dots span {
+      width: 6px;
+      height: 6px;
+      background: var(--muted);
+      border-radius: 50%;
+      animation: bounce .8s infinite;
+    }
+
+    .typing-dots span:nth-child(2) {
+      animation-delay: .1s;
+    }
+
+    .typing-dots span:nth-child(3) {
+      animation-delay: .2s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      60%,
+      100% {
+        transform: translateY(0);
+      }
+
+      30% {
+        transform: translateY(-6px);
+      }
+    }
+
+    /* ── CONFIRM BUTTONS ── */
+    .btn {
+      border-radius: 9px;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      transition: .15s;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, .15);
+      border: 1px solid rgba(239, 68, 68, .3);
+      color: var(--red);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, .25);
+    }
+
+    .btn-primary {
+      background: var(--grad);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      opacity: .85;
+    }
+
+    .btn-ghost {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-ghost:hover {
+      background: var(--surface2);
+    }
+
+    /* ── ORDER PLACED BANNER ── */
+    .order-banner {
+      background: linear-gradient(135deg, rgba(34, 197, 94, .12), rgba(34, 197, 94, .05));
+      border: 1px solid rgba(34, 197, 94, .3);
+      border-radius: var(--r);
+      padding: 16px;
+      margin-top: 10px;
+    }
+
+    .ob-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .ob-icon {
+      font-size: 28px;
+    }
+
+    .ob-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .ob-id {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .ob-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .ob-field {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .ob-val {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* ── CANCEL CONFIRM ── */
+    .cancel-confirm-card {
+      background: rgba(239, 68, 68, .06);
+      border: 1px solid rgba(239, 68, 68, .2);
+      border-radius: var(--r);
+      padding: 16px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-icon">🍕</div>
+      <div>
+        <div class="hdr-title">FoodieBot</div>
+        <div class="hdr-sub">Smart Food Delivery · Est. 2026</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="live">
+        <div class="dot"></div> Online
+      </div>
+      <button class="cart-btn" id="cartToggle" onclick="toggleCart()">
+        🛒 Cart
+        <span class="cbadge" id="cartBadge">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- BODY -->
+  <div class="wrap">
+    <!-- CHAT AREA -->
+    <div class="chat">
+      <div class="msgs" id="msgs">
+        <!-- Welcome message -->
+        <div class="msg bot">
+          <div class="avatar bot-av">🤖</div>
+          <div>
+            <div class="bubble">
+              👋 Welcome to <strong>FoodieBot</strong>! I'm your smart food delivery assistant.<br><br>
+              I can show you our 🍛 Indian &amp; 🍔 Western menu, help you order, track your delivery, and much
+              more!<br><br>
+              <em>What are you craving today?</em>
+            </div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;">
+              <button class="qa" onclick="sendQuick('Indian Menu')">🍛 Indian Menu</button>
+              <button class="qa" onclick="sendQuick('Western Menu')">🍔 Western Menu</button>
+              <button class="qa" onclick="sendQuick('Bestsellers')">⭐ Bestsellers</button>
+              <button class="qa" onclick="sendQuick('Offers')">🎁 Offers</button>
+            </div>
+          </div>
+        </div>
+        <!-- Typing indicator -->
+        <div class="typing" id="typing">
+          <div class="avatar bot-av">🤖</div>
+          <div class="typing-dots"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-wrap" id="quickWrap"></div>
+
+      <!-- Input -->
+      <div class="input-area">
+        <input class="chat-input" id="chatInput" placeholder="Ask about menu, place order, track delivery…"
+          onkeydown="if(event.key==='Enter')sendMsg()" />
+        <button class="send-btn" onclick="sendMsg()">➤</button>
+      </div>
+    </div>
+
+    <!-- CART PANEL -->
+    <div class="cart-panel" id="cartPanel">
+      <div class="cp-header">
+        <span class="cp-title">🛒 Your Cart</span>
+        <button class="cp-close" onclick="toggleCart()">✕</button>
+      </div>
+      <div class="cp-body" id="cpBody">
+        <div class="cp-empty">Your cart is empty<br><span style="font-size:11px">Add items from the menu!</span></div>
+      </div>
+      <div class="cp-footer" id="cpFooter" style="display:none;">
+        <div class="cp-total">
+          <span class="cp-total-lbl">Total</span>
+          <span class="cp-total-val" id="cpTotal">₹0</span>
+        </div>
+        <button class="cp-checkout" onclick="triggerCheckout()">✅ Place Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* ── STATE ──────────────────────────────────────────────────── */
+    let cart = [];
+    let cartTotal = 0;
+    let cartCount = 0;
+    let selectedPayment = null;
+    let orderPlaced = false;
+
+    /* ── UTILS ──────────────────────────────────────────────────── */
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.className = 'toast show ' + type;
+      setTimeout(() => { t.className = 'toast'; }, 3000);
+    }
+
+    function setQuickActions(actions) {
+      const qw = document.getElementById('quickWrap');
+      qw.innerHTML = '';
+      if (!actions || !actions.length) return;
+      actions.forEach(a => {
+        const b = document.createElement('button');
+        b.className = 'qa';
+        const label = a.replace(/^[^\s]+\s+/, '').trim(); // strip emoji
+        b.textContent = a;
+        b.onclick = () => sendQuick(label.length ? a : a);
+        qw.appendChild(b);
+      });
+    }
+
+    function scrollBottom() {
+      const m = document.getElementById('msgs');
+      m.scrollTop = m.scrollHeight;
+    }
+
+    function markdownToHtml(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+    }
+
+    /* ── SEND MESSAGE ────────────────────────────────────────────── */
+    function sendMsg() {
+      const inp = document.getElementById('chatInput');
+      const text = inp.value.trim();
+      if (!text) return;
+      inp.value = '';
+      appendUserMsg(text);
+      callChat(text);
+    }
+
+    function sendQuick(text) {
+      appendUserMsg(text);
+      callChat(text);
+    }
+
+    function appendUserMsg(text) {
+      const msgs = document.getElementById('msgs');
+      const typing = document.getElementById('typing');
+      const div = document.createElement('div');
+      div.className = 'msg user';
+      div.innerHTML = `<div class="avatar usr-av">👤</div><div class="bubble">${escHtml(text)}</div>`;
+      msgs.insertBefore(div, typing);
+      scrollBottom();
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function showTyping() { document.getElementById('typing').classList.add('show'); scrollBottom(); }
+    function hideTyping() { document.getElementById('typing').classList.remove('show'); }
+
+    async function callChat(text) {
+      showTyping();
+      try {
+        const r = await fetch('/chat', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await r.json();
+        hideTyping();
+        renderBotResponse(data);
+      } catch (e) {
+        hideTyping();
+        appendBotMsg('Sorry, something went wrong. Please try again. 😔',
+          ['🍛 Indian Menu', '🍔 Western Menu']);
+      }
+    }
+
+    /* ── RENDER BOT RESPONSE ─────────────────────────────────────── */
+    function renderBotResponse(data) {
+      const msgs = document.getElementById('msgs');
+      const typing = document.getElementById('typing');
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;flex-direction:column;gap:0;align-self:flex-start;max-width:90%;animation:fadeUp .3s ease;';
+
+      // Text bubble
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg bot';
+      msgDiv.style.maxWidth = '100%';
+      msgDiv.innerHTML = `<div class="avatar bot-av">🤖</div>
+    <div class="bubble">${markdownToHtml(data.text || '')}</div>`;
+      wrapper.appendChild(msgDiv);
+
+      // Rich content
+      const extra = document.createElement('div');
+      extra.style.cssText = 'padding-left:44px;width:100%;';
+
+      switch (data.type) {
+        case 'menu': extra.appendChild(buildMenu(data.menu_data, data.menu_type)); break;
+        case 'recommendations': extra.appendChild(buildRecommendations(data.items)); break;
+        case 'cart': extra.appendChild(buildInlineCart(data.cart, data.total)); break;
+        case 'empty_cart': break;
+        case 'checkout': extra.appendChild(buildCheckout(data.cart, data.total, data.payment_methods)); break;
+        case 'tracking': extra.appendChild(buildTracking(data)); break;
+        case 'cancel_confirm': extra.appendChild(buildCancelConfirm(data)); break;
+        case 'payment': extra.appendChild(buildPaymentInfo(data.payment_methods)); break;
+        case 'offers': extra.appendChild(buildOffers(data.offers)); break;
+      }
+
+      if (extra.children.length) wrapper.appendChild(extra);
+
+      // Quick actions
+      if (data.quick_actions && data.quick_actions.length) {
+        const qa = document.createElement('div');
+        qa.style.cssText = 'display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;padding-left:44px;';
+        data.quick_actions.forEach(a => {
+          const b = document.createElement('button');
+          b.className = 'qa'; b.textContent = a;
+          b.onclick = () => sendQuick(a);
+          qa.appendChild(b);
+        });
+        wrapper.appendChild(qa);
+      }
+
+      msgs.insertBefore(wrapper, typing);
+      scrollBottom();
+    }
+
+    function appendBotMsg(text, actions) {
+      renderBotResponse({ text, type: 'text', quick_actions: actions || [] });
+    }
+
+    /* ── MENU BUILDER ────────────────────────────────────────────── */
+    function buildMenu(menuData, menuType) {
+      const wrap = document.createElement('div');
+      wrap.className = 'menu-wrap';
+      for (const [cat, items] of Object.entries(menuData)) {
+        // For veg menu, menuData has "indian" and "western" as keys
+        if (menuType === 'veg' && typeof items === 'object' && !Array.isArray(items)) {
+          const h = document.createElement('div');
+          h.className = 'menu-cat';
+          h.style.fontSize = '12px';
+          h.innerHTML = `🌿 ${cat.toUpperCase()}`;
+          wrap.appendChild(h);
+          for (const [subCat, subItems] of Object.entries(items)) {
+            const h2 = document.createElement('div');
+            h2.className = 'menu-cat';
+            h2.textContent = subCat;
+            wrap.appendChild(h2);
+            wrap.appendChild(buildItemGrid(subItems));
+          }
+          continue;
+        }
+        const h = document.createElement('div');
+        h.className = 'menu-cat';
+        h.textContent = cat;
+        wrap.appendChild(h);
+        wrap.appendChild(buildItemGrid(items));
+      }
+      return wrap;
+    }
+
+    function buildItemGrid(items) {
+      const grid = document.createElement('div');
+      grid.className = 'item-grid';
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.innerHTML = `
+      <div class="item-top">
+        <span class="item-emoji">${item.emoji}</span>
+        <span class="item-name">${escHtml(item.name)}</span>
+        <span class="veg-dot ${item.veg ? 'veg' : 'nveg'}" title="${item.veg ? 'Vegetarian' : 'Non-Veg'}"></span>
+      </div>
+      <div class="item-bot">
+        <span class="item-price">₹${item.price}</span>
+        <button class="add-btn" onclick='addToCart(${JSON.stringify(item)})'>+ Add</button>
+      </div>`;
+        grid.appendChild(card);
+      });
+      return grid;
+    }
+
+    /* ── RECOMMENDATIONS ─────────────────────────────────────────── */
+    function buildRecommendations(items) {
+      const grid = document.createElement('div');
+      grid.className = 'rec-grid';
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'rec-card';
+        card.innerHTML = `
+      <div class="rec-emoji">${item.emoji}</div>
+      <div class="rec-name">${escHtml(item.name)}</div>
+      <div class="rec-price">₹${item.price}</div>
+      <div class="veg-dot ${item.veg ? 'veg' : 'nveg'}" style="margin:0 auto 8px" title="${item.veg ? 'Veg' : 'Non-Veg'}"></div>
+      <button class="add-btn" onclick='addToCart(${JSON.stringify(item)})'>+ Add to Cart</button>`;
+        grid.appendChild(card);
+      });
+      return grid;
+    }
+
+    /* ── INLINE CART ─────────────────────────────────────────────── */
+    function buildInlineCart(cartItems, total) {
+      const wrap = document.createElement('div');
+      wrap.className = 'cart-card';
+      cartItems.forEach(item => {
+        const qty = item.qty || 1;
+        const row = document.createElement('div');
+        row.className = 'cart-line';
+        row.innerHTML = `
+      <span class="cart-em">${item.emoji}</span>
+      <div class="cart-info">
+        <div class="cart-nm">${escHtml(item.name)}</div>
+        <div class="cart-qty">Qty: ${qty} × ₹${item.price}</div>
+      </div>
+      <span class="cart-pr">₹${item.price * qty}</span>
+      <button class="rm-btn" onclick="removeFromCart('${escHtml(item.name)}')">✕</button>`;
+        wrap.appendChild(row);
+      });
+      const totalRow = document.createElement('div');
+      totalRow.className = 'cart-total-row';
+      totalRow.innerHTML = `<span class="cart-total-label">Total</span>
+                        <span class="cart-total-val">₹${total}</span>`;
+      wrap.appendChild(totalRow);
+      const actions = document.createElement('div');
+      actions.className = 'action-row';
+      actions.innerHTML = `
+    <button class="btn btn-primary" onclick="triggerCheckout()">✅ Place Order</button>
+    <button class="btn btn-ghost" onclick="sendQuick('Indian Menu')">🍛 Add More</button>`;
+      wrap.appendChild(actions);
+      return wrap;
+    }
+
+    /* ── CHECKOUT ────────────────────────────────────────────────── */
+    function buildCheckout(cartItems, total, payMethods) {
+      const wrap = document.createElement('div');
+      // Summary
+      const summ = document.createElement('div');
+      summ.className = 'cart-card';
+      summ.style.marginBottom = '10px';
+      cartItems.forEach(item => {
+        const r = document.createElement('div');
+        r.className = 'cart-line';
+        r.innerHTML = `<span class="cart-em">${item.emoji}</span>
+      <div class="cart-info"><div class="cart-nm">${escHtml(item.name)}</div></div>
+      <span class="cart-pr">₹${item.price * (item.qty || 1)}</span>`;
+        summ.appendChild(r);
+      });
+      const tr = document.createElement('div');
+      tr.className = 'cart-total-row';
+      tr.innerHTML = `<span class="cart-total-label">Total</span><span class="cart-total-val">₹${total}</span>`;
+      summ.appendChild(tr);
+      wrap.appendChild(summ);
+
+      // Payment selection
+      const plbl = document.createElement('div');
+      plbl.style.cssText = 'font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px;';
+      plbl.textContent = 'Select Payment:';
+      wrap.appendChild(plbl);
+
+      const grid = document.createElement('div');
+      grid.className = 'pay-grid';
+      payMethods.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'pay-card';
+        card.dataset.method = p.method;
+        card.innerHTML = `<div class="pay-icon">${p.icon}</div>
+      <div class="pay-name">${p.method}</div>
+      <div class="pay-desc">${p.desc}</div>`;
+        card.onclick = () => {
+          document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          selectedPayment = p.method;
+          confirmBtn.style.display = 'block';
+        };
+        grid.appendChild(card);
+      });
+      wrap.appendChild(grid);
+
+      const confirmBtn = document.createElement('button');
+      confirmBtn.className = 'confirm-order-btn';
+      confirmBtn.textContent = '🎉 Confirm & Place Order';
+      confirmBtn.onclick = () => placeOrder(confirmBtn);
+      wrap.appendChild(confirmBtn);
+      return wrap;
+    }
+
+    /* ── TRACKING ────────────────────────────────────────────────── */
+    function buildTracking(data) {
+      const statuses = ['confirmed', 'preparing', 'out_for_delivery', 'delivered'];
+      const labels = ['Confirmed', 'Preparing', 'On the Way', 'Delivered'];
+      const icons = ['✅', '👨‍🍳', '🛵', '🎉'];
+      const idx = statuses.indexOf(data.status);
+
+      const card = document.createElement('div');
+      card.className = 'track-card';
+      card.innerHTML = `<div class="track-id">Order ID: <strong>#${data.order_id}</strong> &nbsp;·&nbsp; Payment: ${data.payment_method || '—'} &nbsp;·&nbsp; Total: <strong>₹${data.total}</strong></div>`;
+
+      const steps = document.createElement('div');
+      steps.className = 'track-steps';
+      statuses.forEach((s, i) => {
+        const step = document.createElement('div');
+        step.className = 'track-step';
+        const isDone = i < idx;
+        const isActive = i === idx;
+        step.innerHTML = `
+      ${i < statuses.length - 1 ? `<div class="step-line${isDone ? ' done ' : (isActive ? ' ' : '')}"></div>` : ''}
+      <div class="step-circle ${isDone ? 'done' : (isActive ? 'active' : '')}">${icons[i]}</div>
+      <div class="step-label ${isActive ? 'active-lbl' : ''}">${labels[i]}</div>`;
+        steps.appendChild(step);
+      });
+      card.appendChild(steps);
+
+      const itemsDiv = document.createElement('div');
+      itemsDiv.className = 'track-items';
+      itemsDiv.innerHTML = '<div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">YOUR ORDER</div>';
+      (data.items || []).forEach(item => {
+        const r = document.createElement('div');
+        r.className = 'track-item-row';
+        r.innerHTML = `<span>${item.emoji} ${escHtml(item.name)} × ${item.qty || 1}</span><span>₹${item.price * (item.qty || 1)}</span>`;
+        itemsDiv.appendChild(r);
+      });
+      card.appendChild(itemsDiv);
+      return card;
+    }
+
+    /* ── CANCEL CONFIRM ──────────────────────────────────────────── */
+    function buildCancelConfirm(data) {
+      const card = document.createElement('div');
+      card.className = 'cancel-confirm-card';
+      let html = `<div style="font-size:14px;margin-bottom:10px;"><strong>Order #${data.order_id}</strong></div>`;
+      (data.items || []).forEach(item => {
+        html += `<div style="font-size:13px;color:var(--muted);padding:3px 0;">${item.emoji} ${escHtml(item.name)} × ${item.qty || 1} — ₹${item.price * (item.qty || 1)}</div>`;
+      });
+      html += `<div style="font-size:14px;font-weight:700;margin:10px 0;">Total: ₹${data.total}</div>`;
+      card.innerHTML = html;
+      const btns = document.createElement('div');
+      btns.className = 'action-row';
+      btns.style.marginTop = '10px';
+      const yes = document.createElement('button');
+      yes.className = 'btn btn-danger'; yes.textContent = '❌ Yes, Cancel Order';
+      yes.onclick = () => cancelOrder(data.order_id, data.items, data.total);
+      const no = document.createElement('button');
+      no.className = 'btn btn-ghost'; no.textContent = '← Keep Order';
+      no.onclick = () => sendQuick('Track Order');
+      btns.appendChild(yes); btns.appendChild(no);
+      card.appendChild(btns);
+      return card;
+    }
+
+    /* ── PAYMENT INFO ────────────────────────────────────────────── */
+    function buildPaymentInfo(methods) {
+      const grid = document.createElement('div');
+      grid.className = 'pinfo-grid';
+      methods.forEach(m => {
+        const c = document.createElement('div');
+        c.className = 'pinfo-card';
+        c.innerHTML = `<div class="pinfo-icon">${m.icon}</div>
+      <div><div class="pinfo-name">${m.method}</div><div class="pinfo-desc">${m.desc}</div></div>`;
+        grid.appendChild(c);
+      });
+      return grid;
+    }
+
+    /* ── OFFERS ──────────────────────────────────────────────────── */
+    function buildOffers(offers) {
+      const grid = document.createElement('div');
+      grid.className = 'offer-grid';
+      offers.forEach(o => {
+        const c = document.createElement('div');
+        c.className = 'offer-card';
+        c.innerHTML = `<div class="offer-icon">${o.icon}</div>
+      <span class="offer-code">${o.code}</span>
+      <div class="offer-desc">${o.desc}</div>`;
+        grid.appendChild(c);
+      });
+      return grid;
+    }
+
+    /* ── CART ACTIONS ────────────────────────────────────────────── */
+    async function addToCart(item) {
+      const r = await fetch('/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ item })
+      });
+      const d = await r.json();
+      if (d.success) {
+        cartCount = d.cart_count; cartTotal = d.cart_total;
+        updateCartBadge();
+        showToast(d.message, 'success');
+        refreshCartPanel();
+      }
+    }
+
+    async function removeFromCart(name) {
+      const r = await fetch('/cart/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name })
+      });
+      const d = await r.json();
+      cartCount = d.cart_count; cartTotal = d.cart_total;
+      updateCartBadge();
+      refreshCartPanel();
+    }
+
+    async function refreshCartPanel() {
+      const r = await fetch('/cart/view'); const d = await r.json();
+      cart = d.cart; cartCount = d.count; cartTotal = d.total;
+      updateCartBadge();
+      const body = document.getElementById('cpBody');
+      const footer = document.getElementById('cpFooter');
+      if (!cart.length) {
+        body.innerHTML = '<div class="cp-empty">Your cart is empty<br><span style="font-size:11px">Browse our menu to add items!</span></div>';
+        footer.style.display = 'none'; return;
+      }
+      body.innerHTML = '';
+      cart.forEach(item => {
+        const qty = item.qty || 1;
+        const div = document.createElement('div'); div.className = 'cp-item';
+        div.innerHTML = `<span class="cp-em">${item.emoji}</span>
+      <div class="cp-info">
+        <div class="cp-nm">${escHtml(item.name)}</div>
+        <div class="cp-qty-pr">Qty ${qty} × ₹${item.price}</div>
+      </div>
+      <span class="cp-pr">₹${item.price * qty}</span>
+      <button class="cp-rm" onclick="removeFromCart('${escHtml(item.name)}')">✕</button>`;
+        body.appendChild(div);
+      });
+      document.getElementById('cpTotal').textContent = '₹' + cartTotal;
+      footer.style.display = 'block';
+    }
+
+    function updateCartBadge() {
+      const b = document.getElementById('cartBadge');
+      if (cartCount > 0) { b.textContent = cartCount; b.style.display = 'flex'; }
+      else { b.style.display = 'none'; }
+    }
+
+    function toggleCart() {
+      const panel = document.getElementById('cartPanel');
+      panel.classList.toggle('open');
+      if (panel.classList.contains('open')) refreshCartPanel();
+    }
+
+    function triggerCheckout() {
+      sendQuick('Place Order');
+    }
+
+    /* ── PLACE ORDER ─────────────────────────────────────────────── */
+    async function placeOrder(btn) {
+      if (!selectedPayment) { showToast('Please select a payment method', 'error'); return; }
+      btn.disabled = true; btn.textContent = 'Placing order…';
+      const r = await fetch('/order/place', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payment_method: selectedPayment })
+      });
+      const d = await r.json();
+      btn.disabled = false;
+      if (d.success) {
+        orderPlaced = true;
+        cartCount = 0; cartTotal = 0; updateCartBadge();
+        refreshCartPanel();
+        renderOrderPlaced(d);
+      } else {
+        showToast(d.error || 'Failed to place order', 'error');
+        btn.textContent = '🎉 Confirm & Place Order';
+      }
+    }
+
+    function renderOrderPlaced(d) {
+      const msgs = document.getElementById('msgs');
+      const typing = document.getElementById('typing');
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'align-self:flex-start;max-width:90%;animation:fadeUp .3s ease;padding-left:44px;';
+      wrapper.innerHTML = `
+    <div class="order-banner">
+      <div class="ob-top">
+        <span class="ob-icon">🎉</span>
+        <div><div class="ob-title">Order Placed Successfully!</div>
+             <div class="ob-id">Order #${d.order_id}</div></div>
+      </div>
+      <div class="ob-info">
+        <div><div class="ob-field">Total</div><div class="ob-val">₹${d.total}</div></div>
+        <div><div class="ob-field">Payment</div><div class="ob-val">${d.payment_method}</div></div>
+        <div><div class="ob-field">ETA</div><div class="ob-val">${d.estimated_time}</div></div>
+        <div><div class="ob-field">Status</div><div class="ob-val" style="color:var(--green)">Confirmed ✅</div></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;">
+      <button class="qa" onclick="sendQuick('Track Order')">📦 Track Order</button>
+      <button class="qa" onclick="sendQuick('Cancel Order')">❌ Cancel</button>
+      <button class="qa" onclick="sendQuick('Indian Menu')">🍛 Order More</button>
+    </div>`;
+      msgs.insertBefore(wrapper, typing);
+      scrollBottom();
+    }
+
+    /* ── CANCEL ORDER ────────────────────────────────────────────── */
+    async function cancelOrder(orderId, items, total) {
+      const r = await fetch('/order/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const d = await r.json();
+      if (d.success) {
+        orderPlaced = false;
+        renderCancelled(d);
+      } else {
+        showToast(d.error || 'Could not cancel', 'error');
+      }
+    }
+
+    function renderCancelled(d) {
+      const msgs = document.getElementById('msgs');
+      const typing = document.getElementById('typing');
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'align-self:flex-start;max-width:90%;animation:fadeUp .3s ease;padding-left:44px;';
+      let itemsHtml = (d.cancelled_items || []).map(i =>
+        `<div class="cancel-items">${i.emoji} ${escHtml(i.name)} × ${i.qty || 1} — ₹${i.price * (i.qty || 1)}</div>`).join('');
+      wrapper.innerHTML = `
+    <div class="cancel-card">
+      <div class="cancel-title">❌ Order Cancelled — #${d.order_id}</div>
+      ${itemsHtml}
+      <div style="margin-top:8px;font-size:13px;color:var(--muted);">Total cancelled: ₹${d.refund_amount}</div>
+      <div class="cancel-refund" style="margin-top:6px;">💚 Refund of ₹${d.refund_amount} will be processed in 3-5 business days.</div>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;">
+      <button class="qa" onclick="sendQuick('Indian Menu')">🍛 Order Again</button>
+      <button class="qa" onclick="sendQuick('Western Menu')">🍔 Western Menu</button>
+      <button class="qa" onclick="sendQuick('Offers')">🎁 Check Offers</button>
+    </div>
+    <div style="margin-top:10px;font-size:13px;color:var(--muted);padding-left:0;">
+      We're sorry to see you go! 😢 Can we tempt you with something else? Our <strong style="color:var(--accent)">Butter Chicken</strong> or <strong style="color:var(--accent)">BBQ Pizza</strong> might change your mind! 🍕
+    </div>`;
+      msgs.insertBefore(wrapper, typing);
+      scrollBottom();
+    }
+
+    /* ── INIT ────────────────────────────────────────────────────── */
+    window.addEventListener('load', async () => {
+      const r = await fetch('/cart/view');
+      const d = await r.json();
+      cart = d.cart; cartCount = d.count; cartTotal = d.total;
+      updateCartBadge();
+      document.getElementById('chatInput').focus();
+    });
+  </script>
+</body>
+
+</html>
